@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import pyshearlab
 
 tic()
-print("--SLExampleImageDenoising")
+print("--Testing adjoint")
 print("loading image...")
 
 sigma = 30
@@ -49,20 +49,9 @@ coeffs = pyshearlab.SLsheardec2D(Xnoisy, shearletSystem)
 oldCoeffs = coeffs.copy()
 weights = np.ones(coeffs.shape)
 
-for j in range(len(shearletSystem["RMS"])):
-    weights[:,:,j] = shearletSystem["RMS"][j]*np.ones((X.shape[0], X.shape[1]))
-coeffs = np.real(coeffs)
-j = np.abs(coeffs) / (thresholdingFactor * weights * sigma) < 1
-coeffs[j] = 0
-
 # reconstruction
-Xrec = pyshearlab.SLshearrec2D(coeffs, shearletSystem)
-toc()
-PSNR = pyshearlab.SLcomputePSNR(X,Xrec)
-print("PSNR: " + str(PSNR))
-#sio.savemat("PyShearLab_DenoisingExample.mat", {"weights": weights, "XPyNoisy": Xnoisy,
-# "XPyDenoised": Xrec, "PyPSNR": PSNR, "coeffThrPy": coeffs, "oldCoeffs": oldCoeffs})
-plt.gray()
-plt.imshow(Xrec)
-plt.colorbar()
-plt.show()
+Xadj = pyshearlab.SLshearadjoint2D(coeffs, shearletSystem)
+
+# Validate adjoint equation
+print('<Ax, Ax> = {}, <x, AtAx> = {}, should be equal'.format(
+        np.vdot(coeffs, coeffs), np.vdot(Xnoisy, Xadj)))

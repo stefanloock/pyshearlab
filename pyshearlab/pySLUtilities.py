@@ -15,7 +15,6 @@ import scipy.io as sio
 from pyshearlab.pySLFilters import *
 
 
-
 def SLcheckFilterSizes(rows,cols, shearLevels,directionalFilter,scalingFilter,
                         waveletFilter,scalingFilter2):
     """
@@ -511,7 +510,7 @@ def SLgetWedgeBandpassAndLowpassFilters2D(rows,cols,shearLevels,directionalFilte
         filterLow2[j] = np.convolve(filterLow2[-1], SLupsample(filterLow2[j+1],2,1))
     # construct bandpass filters for scales 1 to nScales
     for j in range(len(filterHigh)):
-        bandpass[:,:,j] = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(SLpadArray(filterHigh[j], np.array([rows, cols])))))
+        bandpass[:,:,j] = fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(SLpadArray(filterHigh[j], np.array([rows, cols])))))
 
     ## construct wedge filters for achieving directional selectivity.
     # as the entries in the shearLevels array describe the number of differently
@@ -563,7 +562,7 @@ def SLgetWedgeBandpassAndLowpassFilters2D(rows,cols,shearLevels,directionalFilte
             #print(filterLow2[len(filterLow2)-max(shearLevel-1,0)-1].shape)
             lowpassHelp = SLpadArray(filterLow2[len(filterLow2)-max(shearLevel-1,0)-1], np.asarray(wedgeUpsampled.shape))
             if shearLevel >= 1:
-                wedgeUpsampled = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(lowpassHelp))) * np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(wedgeUpsampled))))))
+                wedgeUpsampled = fftlib.fftshift(fftlib.ifft2(fftlib.ifftshift(fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(lowpassHelp))) * fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(wedgeUpsampled))))))
             lowpassHelpFlip = np.fliplr(lowpassHelp)
             # traverse all directions of the upper part of the left horizontal
             # frequency cone
@@ -573,12 +572,12 @@ def SLgetWedgeBandpassAndLowpassFilters2D(rows,cols,shearLevels,directionalFilte
                 # convolve again with flipped lowpass filter, as required by
                 # equation (22) on page 15
                 if shearLevel >= 1:
-                        wedgeUpsampledSheared = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(lowpassHelpFlip))) * np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(wedgeUpsampledSheared))))))
+                        wedgeUpsampledSheared = fftlib.fftshift(fftlib.ifft2(fftlib.ifftshift(fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(lowpassHelpFlip))) * fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(wedgeUpsampledSheared))))))
                 # obtain downsampled and renormalized and sheared wedge filter
                 # in the frequency domain, according to equation (22), page 15.
-                wedge[shearLevel][:,:,int(np.fix(np.power(2,shearLevel))-k)] = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(np.power(2,shearLevel)*wedgeUpsampledSheared[:,0:np.power(2,shearLevel)*cols-1:np.power(2,shearLevel)])))
+                wedge[shearLevel][:,:,int(np.fix(np.power(2,shearLevel))-k)] = fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(np.power(2,shearLevel)*wedgeUpsampledSheared[:,0:np.power(2,shearLevel)*cols-1:np.power(2,shearLevel)])))
     # compute low pass filter of shearlet system
-    lowpass = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(SLpadArray(np.outer(filterLow[0],filterLow[0]), np.array([rows, cols])))))
+    lowpass = fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(SLpadArray(np.outer(filterLow[0],filterLow[0]), np.array([rows, cols])))))
     return wedge, bandpass, lowpass
 
 

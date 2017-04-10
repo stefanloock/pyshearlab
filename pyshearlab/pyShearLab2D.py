@@ -9,7 +9,6 @@ published in the ShearLab3Dv11 toolbox on http://www.shearlet.org.
 Stefan Loock, February 2, 2017 [sloock@gwdg.de]
 """
 
-import sys
 import numpy as np
 from pyshearlab.pySLFilters import *
 from pyshearlab.pySLUtilities import *
@@ -215,13 +214,13 @@ def SLsheardec2D(X, shearletSystem):
     coeffs = np.zeros(shearletSystem["shearlets"].shape, dtype=complex)
 
     # get data in frequency domain
-    Xfreq = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(X)))
+    Xfreq = fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(X)))
 
     # compute shearlet coefficients at each scale
     # note that pointwise multiplication in the fourier domain equals
     # convolution in the time-domain
     for j in range(shearletSystem["nShearlets"]):
-        coeffs[:,:,j] = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(Xfreq*np.conj(shearletSystem["shearlets"][:,:,j]))))
+        coeffs[:,:,j] = fftlib.fftshift(fftlib.ifft2(fftlib.ifftshift(Xfreq*np.conj(shearletSystem["shearlets"][:,:,j]))))
 
     # probably due to rounding errors, the result may have imaginary parts with
     # small magnitude. if they are small enough, we can ignore them. otherwise
@@ -268,9 +267,9 @@ def SLshearrec2D(coeffs, shearletSystem):
     X = np.zeros((coeffs.shape[0], coeffs.shape[1]), dtype=complex)
 
     for j in range(shearletSystem["nShearlets"]):
-        X = X + np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(coeffs[:,:,j])))*shearletSystem["shearlets"][:,:,j]
+        X = X + fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(coeffs[:,:,j])))*shearletSystem["shearlets"][:,:,j]
 
-    X = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift((np.divide(X,shearletSystem["dualFrameWeights"])))))
+    X = fftlib.fftshift(fftlib.ifft2(fftlib.ifftshift((np.divide(X,shearletSystem["dualFrameWeights"])))))
 
     # probably due to rounding errors, the result may have imaginary parts with
     # small magnitude. if they are small enough, we can ignore them. otherwise
@@ -282,5 +281,51 @@ def SLshearrec2D(coeffs, shearletSystem):
         print("Data is probably not real-valued. Largest magnitude: " + str(np.max(np.abs(np.imag(X)))))
         print("Imaginary part neglected.")
         return np.real(X)
+    
+    
+
+def SLshearadjoint2D(coeffs, shearletSystem):
+    """
+    2D adjoint from shearlet coefficients.
+
+    Usage:
+
+        X = SLshearrec2D(coeffs, shearletSystem)
+
+    Input:
+
+        coeffs:          X x Y x N array of shearlet coefficients.
+        shearletSystem: Structure containing a shearlet system. This
+                        should be the same system as the one
+                        previously used for decomposition.
+
+    Output:
+
+        X: Adjoint, 2D data.
+
+    Example:
+
+        X = double(imread('barbara.jpg'))
+        useGPU = 0
+        shearletSystem = SLgetShearletSystem2D(useGPU,size(X,1),size(X,2),4)
+        coeffs = SLsheardec2D(X,shearletSystem)
+        Xadj = SLshearadjoint2D(coeffs,shearletSystem)
+        
+        # Verify adjoint equation
+        print(np.vdot(X, Xadj), np.vdot(coeffs, coeffs))
+
+    See also: SLgetShearlets2D, SLsheardec2D, SLshearrec2D
+    """
+    # skipping useGPU stuff...
+    X = np.zeros((coeffs.shape[0], coeffs.shape[1]), dtype=complex)
+
+    for j in range(shearletSystem["nShearlets"]):
+        X += np.conj(shearletSystem["shearlets"][:,:,j]) * fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(coeffs[..., j])))
+
+    # get data in frequency domain
+    Xresult = fftlib.fftshift(fftlib.ifft2(fftlib.ifftshift(X)))
+    
+    return np.real(Xresult)
+
 #
 ##############################################################################
