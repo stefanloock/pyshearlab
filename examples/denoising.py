@@ -15,7 +15,7 @@ import numpy as np
 from scipy import ndimage as img
 from scipy import io as sio
 import matplotlib.pyplot as plt
-from pyShearLab2D import *
+from pyshearlab import *
 
 tic()
 print("--SLExampleImageDenoising")

@@ -12,7 +12,7 @@ import sys
 import numpy as np
 import scipy as scipy
 import scipy.io as sio
-from pySLFilters import *
+from pyshearlab.pySLFilters import *
 
 
 

@@ -11,8 +11,8 @@ Stefan Loock, February 2, 2017 [sloock@gwdg.de]
 
 import sys
 import numpy as np
-from pySLFilters import *
-from pySLUtilities import *
+from pyshearlab.pySLFilters import *
+from pyshearlab.pySLUtilities import *
 
 def SLgetShearletSystem2D(useGPU, rows, cols, nScales, shearLevels=None, full=0, directionalFilter=None, quadratureMirrorFilter=None):
     """
