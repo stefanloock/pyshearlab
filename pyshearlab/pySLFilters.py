@@ -11,6 +11,15 @@ Stefan Loock, February 2, 2017 [sloock@gwdg.de]
 import numpy as np
 from scipy import signal as signal
 
+
+try:
+    import pyfftw
+    fftlib = pyfftw.interfaces.numpy_fft
+    pyfftw.interfaces.cache.enable()
+except ImportError:
+    fftlib = np.fft
+    
+
 def MakeONFilter(Type,Par=1):
     """
     This is a rewrite of the original Matlab implementation of MakeONFilter.m
@@ -665,7 +674,7 @@ def mctrans(b,t):
     # if mod(n,2) != 0 -> error
     n = (b.size-1)//2
 
-    b = np.fft.fftshift(b[::-1]) #inverse fftshift
+    b = fftlib.fftshift(b[::-1]) #inverse fftshift
     b = b[::-1]
     a = np.zeros(n+1)
     a[0] = b[0]
