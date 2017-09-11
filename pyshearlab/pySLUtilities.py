@@ -8,6 +8,7 @@ published in the ShearLab3Dv11 toolbox on http://www.shearlet.org.
 Stefan Loock, February 2, 2017 [sloock@gwdg.de]
 """
 
+from __future__ import division
 import sys
 import numpy as np
 import scipy as scipy

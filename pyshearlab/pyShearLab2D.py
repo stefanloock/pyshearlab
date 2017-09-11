@@ -9,6 +9,7 @@ published in the ShearLab3Dv11 toolbox on http://www.shearlet.org.
 Stefan Loock, February 2, 2017 [sloock@gwdg.de]
 """
 
+from __future__ import division
 import numpy as np
 from pyshearlab.pySLFilters import *
 from pyshearlab.pySLUtilities import *
@@ -225,13 +226,13 @@ def SLsheardec2D(X, shearletSystem):
     # probably due to rounding errors, the result may have imaginary parts with
     # small magnitude. if they are small enough, we can ignore them. otherwise
     # we report an error.
-    if np.max(np.abs(np.imag(coeffs))) < 1e-12:
-        return np.real(coeffs)
-    else:
-        print("Warning: magnitude in imaginary part exceeded 1e-12.")
-        print("Coefficients are probably not real-valued. Largest magnitude: " + str(np.max(np.abs(np.imag(coeffs)))))
+    err_bound = np.finfo(X.dtype).resolution * 1e3
+    if np.max(np.abs(np.imag(coeffs))) > err_bound:
+        print("Warning: magnitude in imaginary part exceeded {}.".format(err_bound))
+        print("Data is probably not real-valued. Largest magnitude: " + str(np.max(np.abs(np.imag(coeffs)))))
         print("Imaginary part neglected.")
-        return np.real(coeffs)
+
+    return np.real(coeffs).astype(X.dtype)
 
 
 def SLshearrec2D(coeffs, shearletSystem):
@@ -274,15 +275,15 @@ def SLshearrec2D(coeffs, shearletSystem):
     # probably due to rounding errors, the result may have imaginary parts with
     # small magnitude. if they are small enough, we can ignore them. otherwise
     # we report an error.
-    if np.max(np.abs(np.imag(X))) < 1e-12:
-        return np.real(X)
-    else:
-        print("Warning: magnitude in imaginary part exceeded 1e-12.")
+    err_bound = np.finfo(X.dtype).resolution * 1e3
+    if np.max(np.abs(np.imag(X))) > err_bound:
+        print("Warning: magnitude in imaginary part exceeded {}.".format(err_bound))
         print("Data is probably not real-valued. Largest magnitude: " + str(np.max(np.abs(np.imag(X)))))
         print("Imaginary part neglected.")
-        return np.real(X)
-    
-    
+
+    return np.real(X).astype(coeffs.dtype)
+
+
 
 def SLshearadjoint2D(coeffs, shearletSystem):
     """
@@ -310,7 +311,7 @@ def SLshearadjoint2D(coeffs, shearletSystem):
         shearletSystem = SLgetShearletSystem2D(useGPU,size(X,1),size(X,2),4)
         coeffs = SLsheardec2D(X,shearletSystem)
         Xadj = SLshearadjoint2D(coeffs,shearletSystem)
-        
+
         # Verify adjoint equation
         print(np.vdot(X, Xadj), np.vdot(coeffs, coeffs))
 
@@ -324,8 +325,10 @@ def SLshearadjoint2D(coeffs, shearletSystem):
 
     # get data in frequency domain
     Xresult = fftlib.fftshift(fftlib.ifft2(fftlib.ifftshift(X)))
-    
-    return np.real(Xresult)
+
+    # Do not perform check for imag part here since adjoint should ignore it.
+
+    return np.real(Xresult).astype(coeffs.dtype)
 
 #
 ##############################################################################

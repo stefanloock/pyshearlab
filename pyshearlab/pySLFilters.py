@@ -8,6 +8,7 @@ individual function.
 Stefan Loock, February 2, 2017 [sloock@gwdg.de]
 """
 
+from __future__ import division
 import numpy as np
 from scipy import signal as signal
 
@@ -18,7 +19,7 @@ try:
     pyfftw.interfaces.cache.enable()
 except ImportError:
     fftlib = np.fft
-    
+
 
 def MakeONFilter(Type,Par=1):
     """
