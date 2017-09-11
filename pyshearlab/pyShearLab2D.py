@@ -330,5 +330,38 @@ def SLshearadjoint2D(coeffs, shearletSystem):
 
     return np.real(Xresult).astype(coeffs.dtype)
 
+
+def SLshearrecadjoint2D(X, shearletSystem):
+    """
+    Adjoint of (pseudo-)inverse of 2D data.
+
+    Note that this is also the (pseudo-)inverse of the adjoint.
+
+    Usage:
+
+        coeffs = SLshearrecadjoint2D(X, shearletSystem)
+
+    Input:
+
+        X             : 2D data.
+        shearletSystem: Structure containing a shearlet system. This
+                        should be the same system as the one
+                        previously used for decomposition.
+
+    Output:
+
+        coeffs:          X x Y x N array of shearlet coefficients.
+    """
+    # skipping useGPU stuff...
+
+    # STUFF
+    Xfreq = np.divide(fftlib.fftshift(fftlib.fft2(fftlib.ifftshift(X))), shearletSystem["dualFrameWeights"])
+    coeffs = np.zeros(shearletSystem["shearlets"].shape, dtype=complex)
+
+    for j in range(shearletSystem["nShearlets"]):
+        coeffs[:,:,j] = fftlib.fftshift(fftlib.ifft2(fftlib.ifftshift(Xfreq*np.conj(shearletSystem["shearlets"][:,:,j]))))
+
+    return np.real(coeffs).astype(X.dtype)
+
 #
 ##############################################################################
