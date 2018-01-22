@@ -51,9 +51,10 @@ weights = np.ones(coeffs.shape)
 
 for j in range(len(shearletSystem["RMS"])):
     weights[:,:,j] = shearletSystem["RMS"][j]*np.ones((X.shape[0], X.shape[1]))
+    
 coeffs = np.real(coeffs)
-j = np.abs(coeffs) / (thresholdingFactor * weights * sigma) < 1
-coeffs[j] = 0
+zero_indices = np.abs(coeffs) / (thresholdingFactor * weights * sigma) < 1
+coeffs[zero_indices] = 0
 
 # reconstruction
 Xrec = pyshearlab.SLshearrec2D(coeffs, shearletSystem)
